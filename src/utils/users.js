@@ -22,5 +22,5 @@ module.exports = {
   userJoin,
   getUser,
   userLeave,
-  getRoomUsers
+  getRoomUsers,
 };

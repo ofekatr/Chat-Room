@@ -21,16 +21,21 @@ function defineSocket(io) {
           "join",
           formatMessage(bot_username, `${username} has joined the chat room!`)
         );
+
+      io.to(room).emit("roomUsers", { room, users: getRoomUsers(room) });
     });
 
     socket.on("disconnect", () => {
-      const { username, room } = userLeave(socket.id);
+      const user = userLeave(socket.id);
 
-      if (username) {
+      if (user) {
+        const { username, room } = user;
         io.to(room).emit(
           "message",
           formatMessage(bot_username, `${username} has left the chat room.`)
         );
+
+        io.to(room).emit("roomUsers", { room, users: getRoomUsers(room) });
       }
     });
 
