@@ -4,6 +4,8 @@ const express = require("express");
 const http = require("http");
 const socketio = require("socket.io");
 
+const { formatMessage } = require("./src/utils/messages");
+
 const { PORT } = process.env;
 
 const app = express();
@@ -15,17 +17,17 @@ const username = "John Doe";
 io.on("connection", (socket) => {
   console.log("New web socket connetcion.");
 
-  socket.emit("message", `Welcome, ${username}!`);
+  socket.emit("message", formatMessage(username, `Welcome, ${username}!`));
 
-  socket.broadcast.emit("join", `${username} has joined the chat room!`);
+  socket.broadcast.emit("join", formatMessage(username, `${username} has joined the chat room!`));
 
   socket.on("disconnect", () => {
-    io.emit("message", `${username} has left the chat room.`);
+    io.emit("message", formatMessage(username, `${username} has left the chat room.`));
   });
 
-  socket.on("sendMessage", msg => {
-    io.emit("message", msg);
-  })
+  socket.on("sendMessage", (msg) => {
+    io.emit("message", formatMessage(username, msg));
+  });
 });
 
 const port = PORT || 8080;
