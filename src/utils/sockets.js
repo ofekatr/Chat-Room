@@ -1,33 +1,42 @@
 const { formatMessage } = require("./messages");
-const { userJoin, getUser } = require("./users");
+const { userJoin, getUser, userLeave, getRoomUsers } = require("./users");
 
 function defineSocket(io) {
   let username = "";
-  let room = "";
   const bot_username = "Chat Bot";
 
   io.on("connection", (socket) => {
-    console.log("New web socket connetcion.");
+    socket.on("joinRoom", ({ username, room }) => {
+      userJoin({
+        id: socket.id,
+        username,
+        room,
+      });
 
-    socket.broadcast.emit(
-      "join",
-      formatMessage(bot_username, `${username} has joined the chat room!`)
-    );
+      socket.join(room);
 
-    socket.on("joinRoom", (payload) => {
-      username = payload.username;
-      room = payload.room;
+      socket.broadcast
+        .to(room)
+        .emit(
+          "join",
+          formatMessage(bot_username, `${username} has joined the chat room!`)
+        );
     });
 
     socket.on("disconnect", () => {
-      io.emit(
-        "message",
-        formatMessage(bot_username, `${username} has left the chat room.`)
-      );
+      const { username, room } = userLeave(socket.id);
+
+      if (username) {
+        io.to(room).emit(
+          "message",
+          formatMessage(bot_username, `${username} has left the chat room.`)
+        );
+      }
     });
 
     socket.on("sendMessage", (msg) => {
-      io.emit("message", formatMessage(username, msg));
+      const { username, room } = getUser(socket.id);
+      io.to(room).emit("message", formatMessage(username, msg));
     });
   });
 }

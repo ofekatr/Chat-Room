@@ -15,8 +15,8 @@ socket.on("message", (msg) => {
   chatMessages.scrollTop = chatMessages.scrollHeight;
 });
 
-socket.on("join", ({ text }) => {
-  console.log(text);
+socket.on("join", (msg) => {
+  outputMessage(msg);
 });
 
 chatForm.addEventListener("submit", (e) => {
