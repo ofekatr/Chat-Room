@@ -13,16 +13,21 @@ const server = http.createServer(app);
 const io = socketio(server);
 
 app.use(express.static(path.join(__dirname, "public")));
-const username = "John Doe";
+let username = '';
+let room = '';
+const bot_username = "Chat Bot";
 io.on("connection", (socket) => {
   console.log("New web socket connetcion.");
 
-  socket.emit("message", formatMessage(username, `Welcome, ${username}!`));
+  socket.broadcast.emit("join", formatMessage(bot_username, `${username} has joined the chat room!`));
 
-  socket.broadcast.emit("join", formatMessage(username, `${username} has joined the chat room!`));
+  socket.on("joinRoom", payload => {
+    username = payload.username;
+    room = payload.room;
+  });
 
   socket.on("disconnect", () => {
-    io.emit("message", formatMessage(username, `${username} has left the chat room.`));
+    io.emit("message", formatMessage(bot_username, `${username} has left the chat room.`));
   });
 
   socket.on("sendMessage", (msg) => {
